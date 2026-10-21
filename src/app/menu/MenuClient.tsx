@@ -10,14 +10,14 @@ type Item = { productoId: number; nombre: string; precio: number; cantidad: numb
 
 const Bs = (n: number) => `Bs ${n.toLocaleString("es-BO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/* estilo "carta clara": crema + vino (coincide con el comprobante de pedido) */
-const VINO = "#8a2b2b";
-const CREMA = "#faf4e9";
-const TINTA = "#3a2a24";
-const MUTE = "#8d7b70";
-const LINE = "#ece1cf";
-const TILE = "#f6e9e4";
-const CREMA_ORO = "#f7e9c8";
+/* estilo "carta gourmet": marfil cálido, vino criollo y carbón */
+const VINO = "#8b261b";
+const CREMA = "#fbf7f0";
+const TINTA = "#2a1b14";
+const MUTE = "#7c685b";
+const LINE = "#e8decb";
+const TILE = "#f4ede1";
+const CREMA_ORO = "#fdf3d8";
 
 const ICONO_TIPO: Record<string, string> = { PLATOS: "🍴", BEBIDAS: "🍹", POSTRES: "🧁" };
 
@@ -112,23 +112,23 @@ export default function MenuClient() {
     <div className="min-h-dvh" style={{ background: CREMA, color: TINTA }}>
       <main className="mx-auto max-w-2xl pb-36">
         {/* cabecera */}
-        <header className="sticky top-0 z-20 backdrop-blur-md" style={{ background: "rgba(250,244,233,.92)" }}>
+        <header className="sticky top-0 z-20 backdrop-blur-md" style={{ background: "rgba(251,247,240,.94)", borderBottom: `1px solid ${LINE}` }}>
           <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full font-extrabold text-white !leading-none" style={{ background: VINO }}>
-                LP
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl font-serif font-black text-white text-lg shadow-sm" style={{ background: "linear-gradient(135deg, #c2410c, #8b261b)" }}>
+                🫕
               </span>
               <div>
-                <p className="font-extrabold text-lg !leading-none" style={{ color: TINTA }}>La Paila</p>
-                <p className="text-[11px] mt-1" style={{ color: MUTE }}>picantería criolla · para consumir aquí</p>
+                <p className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: TINTA }}>La Paila</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1 font-semibold" style={{ color: MUTE }}>picantería criolla · carta viva</p>
               </div>
             </div>
             <button
               onClick={() => unidades > 0 && setAbrirCarrito(true)}
-              className="rounded-full px-3.5 py-2 text-[12px] font-semibold shrink-0"
-              style={{ background: CREMA_ORO, color: "#7a5a17", border: "1px solid #eadfae" }}
+              className="rounded-full px-4 py-2 text-[12px] font-semibold shrink-0 transition-transform active:scale-95 shadow-sm"
+              style={{ background: CREMA_ORO, color: "#8a5814", border: "1px solid #edd9a6" }}
             >
-              {unidades > 0 ? `Tu carrito · ${unidades} ${unidades === 1 ? "ítem" : "ítems"} 👇` : "Cuenta tus platos al carrito 👇"}
+              {unidades > 0 ? `Tu pedido · ${unidades} ${unidades === 1 ? "ítem" : "ítems"} 👇` : "Pide tus platos aquí 👇"}
             </button>
           </div>
           {/* pestañas de categorías */}
@@ -164,9 +164,9 @@ export default function MenuClient() {
           {visibles.map((c) => (
             <div key={c.id} className="mb-6">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg" aria-hidden>{ICONO_TIPO[c.tipo] ?? "🍴"}</span>
-                <h2 className="font-extrabold text-lg !leading-none" style={{ color: VINO }}>{c.nombre}</h2>
-                <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold" style={{ background: "#f1e6d7", color: MUTE }}>
+                <span className="text-xl" aria-hidden>{ICONO_TIPO[c.tipo] ?? "🍴"}</span>
+                <h2 className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: VINO }}>{c.nombre}</h2>
+                <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-wide" style={{ background: "#f1e6d7", color: MUTE }}>
                   {c.productos.length} {c.productos.length === 1 ? "opción" : "opciones"}
                 </span>
               </div>
@@ -176,32 +176,32 @@ export default function MenuClient() {
                   return (
                     <article
                       key={p.id}
-                      className="flex items-center gap-3 rounded-2xl p-3"
-                      style={{ background: "#fff", border: `1px solid ${LINE}`, boxShadow: "0 1px 2px rgba(58,42,36,.05)", opacity: p.stock <= 0 ? 0.55 : 1 }}
+                      className="flex items-center gap-3.5 rounded-2xl p-3.5 transition-shadow hover:shadow-md"
+                      style={{ background: "#fff", border: `1px solid ${LINE}`, boxShadow: "0 2px 8px -2px rgba(42,27,20,0.06)", opacity: p.stock <= 0 ? 0.55 : 1 }}
                     >
                       {p.imagen.startsWith("/uploads/") ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.imagen} alt={p.nombre} className="!h-14 !w-14 shrink-0 rounded-xl object-cover" style={{ background: TILE }} />
+                        <img src={p.imagen} alt={p.nombre} className="!h-16 !w-16 shrink-0 rounded-2xl object-cover shadow-inner" style={{ background: TILE }} />
                       ) : (
-                        <span className="grid !h-14 !w-14 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: TILE, color: VINO }}>
+                        <span className="grid !h-16 !w-16 shrink-0 place-items-center rounded-2xl text-2xl shadow-inner" style={{ background: TILE, color: VINO }}>
                           {p.imagen.replace("emoji:", "")}
                         </span>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold leading-tight" style={{ color: TINTA }}>{p.nombre}</p>
-                        <p className="text-xs line-clamp-2 mt-0.5" style={{ color: MUTE }}>{p.descripcion}</p>
-                        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                        <p className="brand font-semibold text-base leading-snug tracking-tight" style={{ color: TINTA }}>{p.nombre}</p>
+                        <p className="text-xs line-clamp-2 mt-1 leading-relaxed" style={{ color: MUTE }}>{p.descripcion}</p>
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
                           <span className="tabular font-extrabold text-[15px]" style={{ color: VINO }}>{Bs(Number(p.precio))}</span>
                           {p.stock <= p.stockMin && p.stock > 0 && (
-                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: "#fdeaea", color: "#7a1c1c" }}>¡solo {p.stock}!</span>
+                            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold" style={{ background: "#fdeaea", color: "#7a1c1c" }}>¡solo {p.stock}!</span>
                           )}
                           {p.stock <= 0 && (
-                            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: "#fdeaea", color: "#7a1c1c" }}>agotado</span>
+                            <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold" style={{ background: "#fdeaea", color: "#7a1c1c" }}>agotado</span>
                           )}
                         </div>
                       </div>
                       {enCarrito > 0 ? (
-                        <div className="flex items-center gap-1 rounded-full px-1.5 py-1 shrink-0" style={{ background: TILE, border: `1px solid ${LINE}` }}>
+                        <div className="flex items-center gap-1.5 rounded-full px-2 py-1.5 shrink-0" style={{ background: TILE, border: `1px solid ${LINE}` }}>
                           <button onClick={() => quitar(p)} aria-label="quitar" className="px-1.5 text-lg font-bold" style={{ color: VINO }}>−</button>
                           <span className="tabular w-5 text-center font-bold" style={{ color: TINTA }}>{enCarrito}</span>
                           <button onClick={() => agregar(p)} aria-label="agregar" className="px-1.5 text-lg font-bold" style={{ color: VINO }}>+</button>
@@ -210,8 +210,8 @@ export default function MenuClient() {
                         <button
                           onClick={() => agregar(p)}
                           disabled={p.stock <= 0}
-                          className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold text-white shrink-0"
-                          style={{ background: VINO }}
+                          className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold text-white shrink-0 shadow-sm transition-transform active:scale-95"
+                          style={{ background: "linear-gradient(135deg, #a83224 0%, #7a1c12 100%)" }}
                         >
                           <span className="text-base leading-none">＋</span> Agregar
                         </button>
@@ -230,14 +230,14 @@ export default function MenuClient() {
 
       {/* barra inferior carrito */}
       {unidades > 0 && fase === "menu" && (
-        <div className="fixed bottom-0 inset-x-0 z-30 p-4" style={{ background: "linear-gradient(to top, #faf4e9 70%, transparent)" }}>
+        <div className="fixed bottom-0 inset-x-0 z-30 p-4" style={{ background: "linear-gradient(to top, rgba(251,247,240,0.98) 70%, transparent)" }}>
           <button
             onClick={() => setAbrirCarrito(true)}
-            className="mx-auto flex max-w-2xl w-full items-center justify-between rounded-full px-5 py-3.5 text-white"
-            style={{ background: VINO }}
+            className="mx-auto flex max-w-2xl w-full items-center justify-between rounded-full px-6 py-3.5 text-white shadow-xl transition-transform active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg, #c2410c 0%, #8b261b 100%)", boxShadow: "0 8px 24px -4px rgba(139, 38, 27, 0.45)" }}
           >
-            <span className="font-semibold">🛒 Ver pedido · {unidades} {unidades === 1 ? "ud" : "uds"}</span>
-            <span className="tabular font-extrabold">{Bs(total)}</span>
+            <span className="font-semibold text-base">🛒 Ver pedido · {unidades} {unidades === 1 ? "plato" : "platos"}</span>
+            <span className="tabular font-extrabold text-lg">{Bs(total)}</span>
           </button>
         </div>
       )}
