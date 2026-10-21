@@ -13,4 +13,4 @@
 
 ## Fase 4 — Validación y Despliegue
 - [x] T6 Validar compilación local (`npm run build` / `tsc --noEmit`).
-- [ ] T7 Subir cambios a GitHub (`main`) y desplegar en Coolify validando estado `healthy`.
+- [x] T7 Subir cambios a GitHub (`main`) y desplegar en Coolify validando estado `healthy`.
