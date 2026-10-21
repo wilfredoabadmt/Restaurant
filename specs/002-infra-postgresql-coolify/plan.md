@@ -42,3 +42,6 @@
    - *Mitigación*: Se declara en Coolify un volumen de almacenamiento persistente mapeado a `/app/public/uploads`.
 3. **Exposición de credenciales de desarrollo**:
    - *Mitigación*: Se adiciona `.claude/` y archivos `.env` a `.gitignore` antes del primer `git add`.
+4. **Fallo de comprobación de salud durante Rolling Update (`curl: not found` y tiempo de arranque)**:
+   - *Riesgo*: `node:20-alpine` no incluye `curl` nativamente, lo que provoca fallo en el ejecutor de Coolify (`/bin/sh: curl: not found`), sumado a que el sondeo prematuro mientras se sincroniza PostgreSQL (`prisma db push`) y `AUTO_SEED` causa rechazo de conexión (`Connection refused`).
+   - *Mitigación*: Se instaló `curl` en la etapa base Alpine, se declaró la directiva `HEALTHCHECK` en `Dockerfile` y se configuró en Coolify un periodo de gracia inicial (`start_period`) de 30s con 5 reintentos en `/api/menu`.
