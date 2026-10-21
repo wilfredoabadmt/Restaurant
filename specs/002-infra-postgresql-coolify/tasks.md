@@ -26,3 +26,7 @@
 - [x] T17 Configurar variables de entorno (`DATABASE_URL`, `AUTH_KEY`, `AUTO_SEED=true`).
 - [x] T18 Configurar volumen persistente para `/app/public/uploads` en Coolify (`ituym40fzovvybopq2wdndnf-la-paila-uploads`).
 - [x] T19 Ejecutar despliegue y verificar funcionamiento en vivo (`https://la-paila.200.105.141.138.sslip.io`).
+
+## Fase 5 — Configuración y Monitoreo de Healthcheck en Coolify
+- [x] T20 Agregar `curl` en la imagen base Alpine y directiva `HEALTHCHECK` nativa en Dockerfile.
+- [x] T21 Configurar parámetros de comprobación de salud en Coolify (`/api/menu`, puerto 3000, periodo de inicio 30s, 5 reintentos) para estado `Running (healthy)`.
