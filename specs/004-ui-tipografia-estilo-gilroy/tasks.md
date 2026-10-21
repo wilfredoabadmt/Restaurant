@@ -12,4 +12,4 @@
 
 ## Fase 4 — Validación y Despliegue
 - [x] T5 Ejecutar compilación de verificación local (`npm run build`).
-- [ ] T6 Subir a GitHub (`main`) y desplegar en Coolify verificando estado `running:healthy`.
+- [x] T6 Subir a GitHub (`main`) y desplegar en Coolify verificando estado `running:healthy`.
