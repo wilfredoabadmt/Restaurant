@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.github
+.specify
+specs
+capturas
+respaldo
+bd
+.claude
+.vscode
+*.log
+.env
+.env.*
+!.env.example
+README.md

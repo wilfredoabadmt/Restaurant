@@ -1,0 +1,41 @@
+{
+  "name": "resto-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "setup": "prisma db push && tsx prisma/seed.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.5.28",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "@prisma/client": "^6.4.1",
+    "jose": "^6.1.1",
+    "bcryptjs": "^3.0.2",
+    "zod": "^4.6.7",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/qrcode": "^1.5.5",
+    "prisma": "^6.4.1",
+    "tsx": "^4.20.5",
+    "tailwindcss": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.17"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}

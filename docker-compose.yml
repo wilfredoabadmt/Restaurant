@@ -1,0 +1,21 @@
+# PostgreSQL 14 para desarrollo — docker compose up -d
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: la-paila-db
+    environment:
+      POSTGRES_USER: resto
+      POSTGRES_PASSWORD: resto2026
+      POSTGRES_DB: restaurante
+    ports:
+      - "5432:5432"
+    volumes:
+      - la_paila_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resto -d restaurante"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  la_paila_pgdata:

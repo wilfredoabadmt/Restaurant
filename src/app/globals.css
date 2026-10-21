@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #140e0a;
+  --panel: #1e1611;
+  --panel2: #271d15;
+  --line: #3a2b20;
+  --ink: #f2e8dc;
+  --muted: #a89684;
+  --brasa: #ff7a2f;
+  --amanecer: #ffb13d;
+  --ok: #38d996;
+  --peligro: #f87171;
+  --cielo: #7dd3fc;
+}
+
+html { color-scheme: dark; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ————— identidad tipográfica ————— */
+.serif { font-family: Georgia, "Times New Roman", serif; }
+.brand {
+  font-family: Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ————— zampeza de fondo (fuego discreto) ————— */
+.fondo-brasa {
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(255, 122, 47, 0.14), transparent 60%),
+    radial-gradient(900px 400px at 10% 110%, rgba(255, 177, 61, 0.08), transparent 60%),
+    var(--bg);
+}
+
+/* ————— componentes ————— */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+.card-2 { background: var(--panel2); border: 1px solid var(--line); border-radius: 1rem; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-weight: 600; border-radius: 0.8rem; padding: 0.65rem 1.1rem;
+  cursor: pointer; transition: filter .15s ease, transform .05s ease;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-brasa { background: linear-gradient(135deg, var(--brasa), #f4511e); color: #fff7ee; }
+.btn-brasa:hover { filter: brightness(1.08); }
+.btn-suave { background: var(--panel2); border-color: var(--line); color: var(--ink); }
+.btn-suave:hover { border-color: #6b4f38; }
+.btn-ok { background: var(--ok); color: #06291a; }
+.btn-peligro { background: var(--peligro); color: #2b0505; }
+.btn-xs { padding: 0.3rem 0.6rem; border-radius: 0.6rem; font-size: 0.78rem; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+  border: 1px solid var(--line); background: var(--panel2); color: var(--muted);
+}
+.chip-registrado { color: var(--amanecer); border-color: #5d4423; background: #3c2c12; }
+.chip-listo { color: var(--cielo); border-color: #1d4a5e; background: #0e2a37; }
+.chip-pagado { color: var(--ok); border-color: #1d5e40; background: #0e3729; }
+.chip-anulado { color: var(--peligro); border-color: #5e1d1d; background: #370e0e; }
+
+.input {
+  width: 100%; background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 0.7rem; padding: 0.6rem 0.8rem; color: var(--ink); outline: none;
+}
+.input:focus { border-color: var(--brasa); box-shadow: 0 0 0 3px rgba(255, 122, 47, 0.18); }
+.label { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.3rem; display: block; }
+
+.tile {
+  display: grid; place-items: center; border-radius: 1rem; font-size: 2.6rem;
+  width: 84px; height: 84px; flex: none;
+  background: linear-gradient(140deg, #3c2a1c, #241a12);
+  border: 1px solid var(--line);
+}
+
+.barra { height: 10px; border-radius: 999px; background: #352718; overflow: hidden; }
+.barra > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--brasa), var(--amanecer)); }
+
+.flex-row-scroll { scrollbar-width: thin; }
+.flex-row-scroll::-webkit-scrollbar { height: 6px; }
+.flex-row-scroll::-webkit-scrollbar-thumb { background: #4a3626; border-radius: 99px; }
+
+/* platos de fondo para impresión de comandas */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .ticket-print { box-shadow: none !important; border-color: #999 !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+:focus-visible { outline: 2px solid var(--amanecer); outline-offset: 2px; }

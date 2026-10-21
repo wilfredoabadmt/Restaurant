@@ -1,0 +1,132 @@
+// Picantería La Paila — esquema de base de datos (PostgreSQL)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  ADMIN
+  CAJERO
+}
+
+enum Tipo {
+  PLATOS
+  BEBIDAS
+  POSTRES
+}
+
+enum EstadoPedido {
+  REGISTRADO // enviado por el cliente, en curso
+  LISTO // verificado por el cliente / listo para pagar
+  PAGADO
+  ANULADO
+}
+
+enum TipoServicio {
+  EN_LOCAL
+  PARA_LLEVAR
+}
+
+enum MetodoPago {
+  EFECTIVO
+  QR
+}
+
+model Usuario {
+  id        Int         @id @default(autoincrement())
+  usuario   String      @unique
+  nombre    String
+  apellidos String
+  password  String
+  rol       Rol         @default(CAJERO)
+  activo    Boolean     @default(true)
+  creadoEn  DateTime    @default(now())
+  pedidos   Pedido[]
+  logs      Auditoria[]
+}
+
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique
+  tipo      Tipo       @default(PLATOS)
+  orden     Int        @default(0)
+  activa    Boolean    @default(true)
+  productos Producto[]
+}
+
+model Producto {
+  id          Int          @id @default(autoincrement())
+  categoriaId Int
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id])
+  nombre      String       @unique
+  descripcion String
+  precio      Decimal      @db.Decimal(10, 2)
+  imagen      String // ruta de imagen subida o "emoji:🍔"
+  stock       Int          @default(0)
+  stockMin    Int          @default(4) // umbral de alerta "por agotarse"
+  disponible  Boolean      @default(true)
+  creadoEn    DateTime     @default(now())
+  items       PedidoItem[]
+
+  @@index([categoriaId])
+}
+
+model Pedido {
+  id              Int          @id @default(autoincrement())
+  codigo          String?      @unique // código alfanumérico para el cliente (p. ej. "JPCG9"); fallback: P-00nn
+  alias           String       @default("Pendiente")
+  celular         String       @default("")
+  mensaje         String?      @default("")
+  estado          EstadoPedido @default(REGISTRADO)
+  servicio        TipoServicio @default(EN_LOCAL)
+  metodoPago      MetodoPago?
+  montoRecibido   Decimal?     @db.Decimal(10, 2)
+  vuelto          Decimal?     @db.Decimal(10, 2)
+  total           Decimal      @db.Decimal(10, 2)
+  validoHasta     DateTime // creadoEn + 40 min (anulación automática)
+  anuladoEn       DateTime?
+  motivoAnulacion String?
+  creadoEn        DateTime     @default(now())
+  pagadoEn        DateTime?
+  creadoPorId     Int?
+  creadoPor       Usuario?     @relation(fields: [creadoPorId], references: [id])
+  items           PedidoItem[]
+  logs            Auditoria[]
+
+  @@index([estado])
+  @@index([celular])
+  @@index([creadoEn])
+}
+
+model PedidoItem {
+  id         Int       @id @default(autoincrement())
+  pedidoId   Int
+  pedido     Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId Int?
+  producto   Producto? @relation(fields: [productoId], references: [id])
+  nombre     String
+  tipo       Tipo
+  precio     Decimal   @db.Decimal(10, 2)
+  cantidad   Int
+
+  @@index([pedidoId])
+}
+
+model Auditoria {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int?
+  usuarioNombre String
+  pedidoId      Int?
+  pedido        Pedido?  @relation(fields: [pedidoId], references: [id], onDelete: SetNull)
+  accion        String // CREADO | MODIFICADO | MODIFICADO_PRODUCCION | ELIMINADO | PAGADO | ANULADO | VENCIDO | REPOSICION | PRODUCTO | CATEGORIA | CAJERO
+  justificacion String?
+  detalle       Json? // resumen antes → después
+  creadoEn      DateTime @default(now())
+  usuario       Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([creadoEn])
+}

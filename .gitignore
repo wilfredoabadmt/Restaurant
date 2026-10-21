@@ -1,0 +1,25 @@
+# Dependencias y compilación
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Configuraciones locales de IDE y MCP con tokens
+.claude/
+.vscode/
+
+# Logs y SO
+*.log
+.DS_Store
+Thumbs.db
+
+# Fotos subidas (conservar solo el directorio vía .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
