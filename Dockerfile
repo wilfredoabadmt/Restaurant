@@ -1,6 +1,6 @@
 # Dockerfile multi-stage para La Paila (Next.js 15 Standalone + Prisma + PostgreSQL)
 FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat openssl
+RUN apk add --no-cache libc6-compat openssl curl
 
 # --- Dependencias ---
 FROM base AS deps
@@ -48,5 +48,8 @@ RUN chmod +x ./docker-entrypoint.sh && chown nextjs:nodejs ./docker-entrypoint.s
 USER nextjs
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -f http://127.0.0.1:3000/api/menu || exit 1
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
