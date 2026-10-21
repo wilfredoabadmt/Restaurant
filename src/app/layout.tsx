@@ -1,20 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Outfit } from "next/font/google";
+import { Urbanist } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+/**
+ * Tipografía geométrica estilo Gilroy en todos sus cortes y pesos:
+ * 300 (Light), 400 (Regular), 500 (Medium), 600 (SemiBold),
+ * 700 (Bold), 800 (ExtraBold), 900 (Black) con soporte para cursiva.
+ */
+const gilroy = Urbanist({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-gilroy",
   display: "swap",
-  weight: ["400", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   style: ["normal", "italic"],
-});
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -30,8 +28,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${playfair.variable} ${outfit.variable}`}>
-      <body className="fondo-brasa min-h-dvh antialiased">{children}</body>
+    <html lang="es" className={gilroy.variable}>
+      <body className="fondo-brasa min-h-dvh antialiased font-sans">{children}</body>
     </html>
   );
 }

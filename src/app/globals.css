@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  /* Tipografía Geométrica Estilo Gilroy (Urbanist) */
+  --font-gilroy: var(--font-gilroy), "Urbanist", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+
   /* Fondo Carbón y Madera Noble Gastronómica */
   --bg: #0d0906;
   --panel: #160f0a;
@@ -42,24 +45,27 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-sans), "Outfit", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-gilroy);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ————— Identidad Tipográfica Gastronómica ————— */
-.serif {
-  font-family: var(--font-serif), "Playfair Display", Georgia, serif;
+/* ————— Tipografía Geométrica Estilo Gilroy ————— */
+.font-sans {
+  font-family: var(--font-gilroy);
 }
 
 .brand {
-  font-family: var(--font-serif), "Playfair Display", Georgia, serif;
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-family: var(--font-gilroy);
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
-.font-sans {
-  font-family: var(--font-sans), "Outfit", system-ui, -apple-system, sans-serif;
+.serif {
+  font-family: var(--font-gilroy);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .tabular {
@@ -110,8 +116,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-sans), "Outfit", sans-serif;
-  font-weight: 600;
+  font-family: var(--font-gilroy);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   border-radius: 0.85rem;
   padding: 0.7rem 1.25rem;
   cursor: pointer;
@@ -235,7 +242,7 @@ body {
   border-radius: 0.85rem;
   padding: 0.65rem 0.95rem;
   color: var(--ink);
-  font-family: var(--font-sans), "Outfit", sans-serif;
+  font-family: var(--font-gilroy);
   outline: none;
   transition: all 0.2s ease;
 }
