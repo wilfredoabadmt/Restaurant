@@ -144,3 +144,13 @@ model Empresa {
   logo           String   @default("")
   actualizadoEn  DateTime @updatedAt
 }
+
+model Mesa {
+  id             Int      @id @default(autoincrement())
+  numero         Int      @unique
+  nombre         String   // Ej: "Mesa 1", "Terraza 1"
+  token          String   @unique // Token criptográfico único no modificable
+  activa         Boolean  @default(true)
+  creadoEn       DateTime @default(now())
+  actualizadoEn  DateTime @updatedAt
+}

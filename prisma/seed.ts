@@ -33,6 +33,21 @@ async function main() {
     },
   });
 
+  // ---- Mesas Iniciales con Tokens Criptográficos
+  for (let m = 1; m <= 15; m++) {
+    const tokenMesa = `m${m}_${bcrypt.hashSync(`mesa_secreta_${m}`, 4).replace(/[^a-zA-Z0-9]/g, "").slice(0, 24)}`;
+    await db.mesa.upsert({
+      where: { numero: m },
+      update: {},
+      create: {
+        numero: m,
+        nombre: `Mesa ${m}`,
+        token: tokenMesa,
+        activa: true,
+      },
+    });
+  }
+
   // ---- Usuarios
   const pwd = async (p: string) => await bcrypt.hash(p, 10);
   const admin = await db.usuario.upsert({

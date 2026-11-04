@@ -45,24 +45,33 @@ export default function MenuClient() {
   const [error, setError] = useState("");
   const [mesaNum, setMesaNum] = useState<number | null>(null);
   const [mesaToken, setMesaToken] = useState<string>("");
+  const [mesaNombre, setMesaNombre] = useState<string>("");
+  const [cuentaActiva, setCuentaActiva] = useState<{ id: number; codigo: string | null; total: string; items: { id: number; nombre: string; cantidad: number }[] } | null>(null);
 
   useEffect(() => {
-    // Detectar mesa en URL (?mesa=3) y recuperar/generar token único de mesa
+    // Validar token de mesa criptográfico seguro en la URL (?token=tbl_...)
     const params = new URLSearchParams(window.location.search);
-    const m = params.get("mesa");
-    if (m) {
-      const n = parseInt(m, 10);
-      if (!isNaN(n) && n > 0) {
-        setMesaNum(n);
-        // Token de sesión único por mesa en localStorage
-        let token = localStorage.getItem(`mesa_token_${n}`);
-        if (!token) {
-          token = `m${n}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-          localStorage.setItem(`mesa_token_${n}`, token);
-        }
-        setMesaToken(token);
-        if (!alias) setAlias(`Mesa ${n}`);
-      }
+    const tokenUrl = params.get("token");
+
+    if (tokenUrl) {
+      fetch(`/api/mesas/validar?token=${encodeURIComponent(tokenUrl)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.ok && d.mesa) {
+            setMesaNum(d.mesa.numero);
+            setMesaNombre(d.mesa.nombre);
+            setMesaToken(tokenUrl);
+            setAlias(`Mesa ${d.mesa.numero}`);
+            if (d.cuentaActiva) {
+              setCuentaActiva(d.cuentaActiva);
+            }
+          } else {
+            setError(d.error || "El código QR de la mesa no es válido.");
+          }
+        })
+        .catch(() => {
+          setError("No se pudo validar el código QR de la mesa.");
+        });
     }
   }, []);
 
@@ -198,6 +207,24 @@ export default function MenuClient() {
               {unidades > 0 ? `Tu pedido · ${unidades} ${unidades === 1 ? "ítem" : "ítems"} 👇` : "Pide tus platos aquí 👇"}
             </button>
           </div>
+          {/* Notificación de cuenta activa en la mesa */}
+          {mesaNum && cuentaActiva && (
+            <div
+              className="mx-5 mb-2 p-2.5 rounded-xl text-xs flex items-center justify-between shadow-sm border border-amber-300"
+              style={{ background: "#fef3c7", color: "#92400e" }}
+            >
+              <div>
+                <span className="font-bold">⚠️ Mesa con cuenta activa:</span> #{cuentaActiva.codigo ?? cuentaActiva.id}
+                <span className="block text-[11px] opacity-80">
+                  {cuentaActiva.items.reduce((acc, i) => acc + i.cantidad, 0)} platos ordenados previamente · Total: {Bs(Number(cuentaActiva.total))}
+                </span>
+              </div>
+              <span className="text-[10px] bg-amber-200/80 px-2 py-1 rounded font-semibold text-amber-900">
+                Se agrupará a esta mesa
+              </span>
+            </div>
+          )}
+
           {/* pestañas de categorías */}
           <nav className="flex gap-2 overflow-x-auto px-5 pb-3">
             <button
