@@ -82,3 +82,63 @@ export function emojiDe(imagen: string): string {
 export function esRutaImagen(imagen: string): boolean {
   return imagen.startsWith("/uploads/");
 }
+
+export interface DatosEmpresa {
+  id: number;
+  nombre: string;
+  subtitulo: string;
+  nit: string;
+  direccion: string;
+  telefono: string;
+  mensajeTicket: string;
+  logo: string;
+}
+
+export const EMPRESA_DEFAULT: DatosEmpresa = {
+  id: 1,
+  nombre: "La Paila",
+  subtitulo: "Picantería Criolla",
+  nit: "",
+  direccion: "",
+  telefono: "",
+  mensajeTicket: "¡Gracias por su preferencia!",
+  logo: "",
+};
+
+/**
+ * Obtiene los datos de personalización de la empresa.
+ * Si no existe registro aún en la base de datos, lo crea o devuelve los valores por defecto.
+ */
+export async function obtenerEmpresa(): Promise<DatosEmpresa> {
+  try {
+    let emp = await db.empresa.findUnique({ where: { id: 1 } });
+    if (!emp) {
+      emp = await db.empresa.create({
+        data: {
+          id: 1,
+          nombre: EMPRESA_DEFAULT.nombre,
+          subtitulo: EMPRESA_DEFAULT.subtitulo,
+          nit: EMPRESA_DEFAULT.nit,
+          direccion: EMPRESA_DEFAULT.direccion,
+          telefono: EMPRESA_DEFAULT.telefono,
+          mensajeTicket: EMPRESA_DEFAULT.mensajeTicket,
+          logo: EMPRESA_DEFAULT.logo,
+        },
+      });
+    }
+    return {
+      id: emp.id,
+      nombre: emp.nombre,
+      subtitulo: emp.subtitulo,
+      nit: emp.nit,
+      direccion: emp.direccion,
+      telefono: emp.telefono,
+      mensajeTicket: emp.mensajeTicket,
+      logo: emp.logo,
+    };
+  } catch (e) {
+    console.error("[obtenerEmpresa] Error al consultar datos de empresa:", e);
+    return EMPRESA_DEFAULT;
+  }
+}
+

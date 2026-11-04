@@ -1,4 +1,5 @@
 import { leerSesion } from "@/lib/sesion";
+import { obtenerEmpresa } from "@/lib/negocio";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -11,6 +12,7 @@ const TABS = [
   { href: "/gerencia/cajeros", t: "Cajeros" },
   { href: "/gerencia/pedidos", t: "Pedidos" },
   { href: "/gerencia/auditoria", t: "Auditoría" },
+  { href: "/gerencia/empresa", t: "Empresa" },
 ];
 
 export default async function LayoutGerencia({ children }: { children: React.ReactNode }) {
@@ -18,11 +20,13 @@ export default async function LayoutGerencia({ children }: { children: React.Rea
   if (!s) redirect("/gerencia/entrar");
   if (s.rol !== "ADMIN") redirect("/panel");
 
+  const empresa = await obtenerEmpresa();
+
   return (
     <div className="mx-auto max-w-4xl min-h-dvh px-4 pb-16">
       <header className="flex flex-wrap items-center justify-between gap-3 py-5">
         <div>
-          <p className="brand text-xl leading-none">Gerencia · La Paila</p>
+          <p className="brand text-xl leading-none">Gerencia · {empresa.nombre}</p>
           <p className="text-[11px] text-[var(--muted)]">{s.nombre} {s.apellidos}</p>
         </div>
         <nav className="flex-row-scroll flex gap-1.5 overflow-x-auto">

@@ -122,11 +122,23 @@ model Auditoria {
   usuarioNombre String
   pedidoId      Int?
   pedido        Pedido?  @relation(fields: [pedidoId], references: [id], onDelete: SetNull)
-  accion        String // CREADO | MODIFICADO | MODIFICADO_PRODUCCION | ELIMINADO | PAGADO | ANULADO | VENCIDO | REPOSICION | PRODUCTO | CATEGORIA | CAJERO
+  accion        String // CREADO | MODIFICADO | MODIFICADO_PRODUCCION | ELIMINADO | PAGADO | ANULADO | VENCIDO | REPOSICION | PRODUCTO | CATEGORIA | CAJERO | EMPRESA
   justificacion String?
   detalle       Json? // resumen antes → después
   creadoEn      DateTime @default(now())
   usuario       Usuario? @relation(fields: [usuarioId], references: [id])
 
   @@index([creadoEn])
+}
+
+model Empresa {
+  id             Int      @id @default(1)
+  nombre         String   @default("La Paila")
+  subtitulo      String   @default("Picantería Criolla")
+  nit            String   @default("")
+  direccion      String   @default("")
+  telefono       String   @default("")
+  mensajeTicket  String   @default("¡Gracias por su preferencia!")
+  logo           String   @default("")
+  actualizadoEn  DateTime @updatedAt
 }

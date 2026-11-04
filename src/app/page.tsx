@@ -1,10 +1,13 @@
 import QRCode from "qrcode";
 import Link from "next/link";
+import Image from "next/image";
 import { headers } from "next/headers";
+import { obtenerEmpresa } from "@/lib/negocio";
 
 export const dynamic = "force-dynamic";
 
 export default async function Landing() {
+  const empresa = await obtenerEmpresa();
   const h = await headers();
   const host = h.get("host") ?? "localhost:3000";
   const proto = host.includes("localhost") ? "http" : "https";
@@ -19,10 +22,24 @@ export default async function Landing() {
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 pb-16">
       <header className="flex items-center justify-between py-6">
         <div className="flex items-center gap-3">
-          <span className="tile !h-12 !w-12 !text-2xl shadow-inner">🫕</span>
+          <div className="tile !h-12 !w-12 !text-2xl shadow-inner overflow-hidden flex items-center justify-center">
+            {empresa.logo && empresa.logo.startsWith("/uploads/") ? (
+              <Image
+                src={empresa.logo}
+                alt={empresa.nombre}
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>🫕</span>
+            )}
+          </div>
           <div>
-            <p className="brand text-2xl tracking-tight text-[var(--ink)]">La Paila</p>
-            <p className="text-xs uppercase tracking-widest text-[var(--amanecer)] font-medium">picantería criolla</p>
+            <p className="brand text-2xl tracking-tight text-[var(--ink)]">{empresa.nombre}</p>
+            <p className="text-xs uppercase tracking-widest text-[var(--amanecer)] font-medium">
+              {empresa.subtitulo || "menú digital"}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">

@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { leerSesion } from "@/lib/sesion";
+import { obtenerEmpresa } from "@/lib/negocio";
 import { Bs } from "@/lib/formato";
 import { BotonesTicket } from "./BotonesTicket";
 
@@ -19,6 +20,8 @@ export default async function PaginaTicket({ params }: { params: Promise<{ id: s
   });
   if (!p) notFound();
 
+  const empresa = await obtenerEmpresa();
+
   const cocina = p.items.filter((i) => i.tipo === "PLATOS");
   const barra = p.items.filter((i) => i.tipo !== "PLATOS"); // bebidas y postres van juntas en la misma comanda
   const totalCocina = cocina.reduce((t, i) => t + Number(i.precio) * i.cantidad, 0);
@@ -27,8 +30,13 @@ export default async function PaginaTicket({ params }: { params: Promise<{ id: s
 
   const Cabecera = (
     <>
-      <p className="font-bold text-[18px]">LA PAILA — PICANTERÍA</p>
-        <p className="text-center">COMANDA {p.codigo ?? p.id.toString().padStart(4, "0")}</p>
+      <p className="font-bold text-[18px]">
+        {empresa.nombre.toUpperCase()}{empresa.subtitulo ? ` — ${empresa.subtitulo.toUpperCase()}` : ""}
+      </p>
+      {empresa.nit && <p className="text-center text-xs">NIT: {empresa.nit}</p>}
+      {empresa.direccion && <p className="text-center text-xs">{empresa.direccion}</p>}
+      {empresa.telefono && <p className="text-center text-xs">TEL: {empresa.telefono}</p>}
+      <p className="text-center font-bold mt-1">COMANDA {p.codigo ?? p.id.toString().padStart(4, "0")}</p>
       <p>{new Date(p.creadoEn).toLocaleDateString("es-BO")} {hora}</p>
       <p>CLIENTE: {p.alias} · {p.celular || "—"}</p>
       <p>{p.servicio === "EN_LOCAL" ? "** SERVIR EN LOCAL **" : "** PARA LLEVAR **"}</p>
@@ -82,6 +90,12 @@ export default async function PaginaTicket({ params }: { params: Promise<{ id: s
           </section>
         )}
       </div>
+
+      {empresa.mensajeTicket && (
+        <p className="text-center italic text-xs mt-6 text-black select-none">
+          &quot;{empresa.mensajeTicket}&quot;
+        </p>
+      )}
     </main>
   );
 }

@@ -10,11 +10,28 @@ const valido = (creadoEn: Date) => new Date(creadoEn.getTime() + 40 * 60 * 1000)
 async function main() {
   // limpiamos para que la semilla sea repetible
   await db.$transaction([
+    db.empresa.deleteMany({}),
     db.auditoria.deleteMany({}),
     db.pedido.deleteMany({}),
     db.producto.deleteMany({}),
     db.categoria.deleteMany({}),
   ]);
+
+  // ---- Datos de la Empresa (por defecto)
+  await db.empresa.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      nombre: "La Paila",
+      subtitulo: "Picantería Criolla",
+      nit: "123456789",
+      direccion: "Av. Principal #123, Zona Central",
+      telefono: "77712345",
+      mensajeTicket: "¡Gracias por su preferencia!",
+      logo: "emoji:🥘",
+    },
+  });
 
   // ---- Usuarios
   const pwd = async (p: string) => await bcrypt.hash(p, 10);

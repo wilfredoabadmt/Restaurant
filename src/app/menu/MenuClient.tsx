@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import type { Tipo } from "@prisma/client";
 
+type EmpresaInfo = { nombre: string; subtitulo: string; logo: string; telefono: string; direccion: string };
 type Prod = { id: number; nombre: string; descripcion: string; precio: string; imagen: string; stock: number; stockMin: number };
 type Cat = { id: number; nombre: string; tipo: Tipo; productos: Prod[] };
 type Item = { productoId: number; nombre: string; precio: number; cantidad: number };
@@ -23,6 +25,13 @@ const ICONO_TIPO: Record<string, string> = { PLATOS: "🍴", BEBIDAS: "🍹", PO
 
 export default function MenuClient() {
   const router = useRouter();
+  const [empresa, setEmpresa] = useState<EmpresaInfo>({
+    nombre: "La Paila",
+    subtitulo: "picantería criolla · carta viva",
+    logo: "",
+    telefono: "",
+    direccion: "",
+  });
   const [cats, setCats] = useState<Cat[]>([]);
   const [tab, setTab] = useState<number | "todos">("todos");
   const [carrito, setCarrito] = useState<Map<number, Item>>(new Map());
@@ -37,6 +46,20 @@ export default function MenuClient() {
 
   useEffect(() => {
     fetch("/api/menu").then((r) => r.json()).then((d) => setCats(d.categorias ?? [])).catch(() => setError("No se pudo cargar el menú."));
+    fetch("/api/empresa")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok && d.empresa) {
+          setEmpresa({
+            nombre: d.empresa.nombre,
+            subtitulo: d.empresa.subtitulo || "picantería criolla · carta viva",
+            logo: d.empresa.logo || "",
+            telefono: d.empresa.telefono || "",
+            direccion: d.empresa.direccion || "",
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const total = useMemo(() => [...carrito.values()].reduce((t, i) => t + i.cantidad * i.precio, 0), [carrito]);
@@ -115,12 +138,22 @@ export default function MenuClient() {
         <header className="sticky top-0 z-20 backdrop-blur-md" style={{ background: "rgba(251,247,240,.94)", borderBottom: `1px solid ${LINE}` }}>
           <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl font-serif font-black text-white text-lg shadow-sm" style={{ background: "linear-gradient(135deg, #c2410c, #8b261b)" }}>
-                🫕
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl font-serif font-black text-white text-lg shadow-sm overflow-hidden" style={{ background: "linear-gradient(135deg, #c2410c, #8b261b)" }}>
+                {empresa.logo && empresa.logo.startsWith("/uploads/") ? (
+                  <Image
+                    src={empresa.logo}
+                    alt={empresa.nombre}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>🫕</span>
+                )}
               </span>
               <div>
-                <p className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: TINTA }}>La Paila</p>
-                <p className="text-[10px] uppercase tracking-wider mt-1 font-semibold" style={{ color: MUTE }}>picantería criolla · carta viva</p>
+                <p className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: TINTA }}>{empresa.nombre}</p>
+                <p className="text-[10px] uppercase tracking-wider mt-1 font-semibold" style={{ color: MUTE }}>{empresa.subtitulo}</p>
               </div>
             </div>
             <button
