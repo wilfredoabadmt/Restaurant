@@ -348,39 +348,62 @@ export function ModalCobro({ pedido, cerrar, alCobrar }: { pedido: Pedido; cerra
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" onClick={cerrar}>
-      <div className="card w-full max-w-md p-5 max-h-[90dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <p className="text-xs text-[var(--muted)]">Cobrar pedido</p>
-        <p className="tabular brand text-2xl text-[var(--amanecer)]">#{pedido.codigo ?? `P-${String(pedido.id).padStart(4, "0")}`}</p>
+      <div className="card w-full max-w-lg p-5 max-h-[92dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[var(--borde)] pb-2 mb-3">
+          <div>
+            <p className="text-xs text-[var(--muted)]">Cobro de cuenta</p>
+            <p className="tabular brand text-2xl text-[var(--amanecer)] font-bold">
+              #{pedido.codigo ?? `P-${String(pedido.id).padStart(4, "0")}`}
+            </p>
+          </div>
+          <a
+            href={`/panel/ticket/${pedido.id}`}
+            target="_blank"
+            className="btn btn-suave btn-xs flex items-center gap-1.5"
+            title="Reimprimir comanda o ticket térmico"
+          >
+            🖨️ Reimprimir Pedido
+          </a>
+        </div>
 
-        <section className="mt-3 grid gap-2 text-sm">
-          <div className="card-2 p-3">
-            <p className="text-xs text-[var(--muted)] mb-1">Cocina (platos)</p>
-            {cocina.map((i) => (
-              <p key={i.id} className="flex justify-between">
-                <span>{i.cantidad}× {i.nombre}</span>
-                <span className="tabular">{Bs(i.cantidad * Number(i.precio))}</span>
-              </p>
-            ))}
-            {cocina.length === 0 && <p className="text-[var(--muted)]">— nada de cocina —</p>}
+        {/* Resumen de cuenta claro con desglose por ítem y Total a pagar en grande */}
+        <section className="mt-2 space-y-3">
+          <div className="card-2 p-3.5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-2">
+              Resumen de la Cuenta (Desglose)
+            </p>
+            <div className="divide-y divide-white/5 text-sm">
+              {pedido.items.map((i) => (
+                <div key={i.id} className="py-2 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-[var(--ink)]">{i.nombre}</span>
+                    <span className="text-xs text-[var(--muted)] block">
+                      {i.cantidad} × {Bs(Number(i.precio))}
+                    </span>
+                  </div>
+                  <span className="tabular font-bold text-[var(--ink)]">
+                    {Bs(i.cantidad * Number(i.precio))}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Total a pagar en grande */}
+            <div className="mt-3 pt-3 border-t-2 border-dashed border-white/20 flex items-center justify-between bg-black/30 p-3 rounded-xl">
+              <div>
+                <span className="text-xs text-[var(--muted)] uppercase tracking-wider block font-semibold">Total a Pagar</span>
+                <span className="text-[11px] text-[var(--muted)]">({pedido.items.reduce((acc, x) => acc + x.cantidad, 0)} ítems)</span>
+              </div>
+              <span className="tabular brand text-3xl font-black text-[var(--amanecer)]">
+                {Bs(total)}
+              </span>
+            </div>
           </div>
-          <div className="card-2 p-3">
-            <p className="text-xs text-[var(--muted)] mb-1">Barra (postres y bebidas)</p>
-            {barra.map((i) => (
-              <p key={i.id} className="flex justify-between">
-                <span>{i.cantidad}× {i.nombre}</span>
-                <span className="tabular">{Bs(i.cantidad * Number(i.precio))}</span>
-              </p>
-            ))}
-            {barra.length === 0 && <p className="text-[var(--muted)]">— nada de barra —</p>}
-          </div>
+
           <label className="card-2 p-3 flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={verificados} onChange={(e) => setVerificados(e.target.checked)} />
             <span className="text-xs">El cliente recuerda y es conforme con todo lo pedido</span>
           </label>
-          <p className="text-right">
-            <span className="text-xs text-[var(--muted)]">total&nbsp;</span>
-            <span className="tabular brand text-xl">{Bs(total)}</span>
-          </p>
         </section>
 
         {/* método de pago */}

@@ -38,19 +38,10 @@ export async function anularVencidos() {
           },
         });
 
-        // Si otra petición concurrente ya lo procesó, count será 0 (evita doble stock)
+        // Si otra petición concurrente ya lo procesó, count será 0
         if (actualizado.count === 0) return;
 
-        // Devolver stock reservado
-        for (const it of p.items) {
-          if (it.productoId) {
-            await tx.producto.update({
-              where: { id: it.productoId },
-              data: { stock: { increment: it.cantidad } },
-            });
-          }
-        }
-
+        // No se devuelve stock aquí porque nunca se descontó al crearse el pedido
         await tx.auditoria.create({
           data: {
             usuarioNombre: "Sistema",

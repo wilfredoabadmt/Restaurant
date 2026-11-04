@@ -90,6 +90,8 @@ model Pedido {
   validoHasta     DateTime // creadoEn + 40 min (anulación automática)
   anuladoEn       DateTime?
   motivoAnulacion String?
+  mesaNumero      Int?         // Número de mesa si fue solicitado por QR de mesa
+  mesaToken       String?      // Token de sesión QR para agrupación de pedidos
   creadoEn        DateTime     @default(now())
   pagadoEn        DateTime?
   creadoPorId     Int?

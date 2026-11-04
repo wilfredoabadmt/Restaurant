@@ -55,17 +55,47 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 }
 
-/** DELETE — baja lógica (deja de mostrarse; el historial de ventas se conserva). */
-export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+/** DELETE — eliminación total o baja lógica según parámetro query o si tiene historial de pedidos. */
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const s = await exigirRol(["ADMIN"]);
     const { id } = await ctx.params;
-    const p = await db.producto.update({ where: { id: Number(id) }, data: { disponible: false } }).catch(() => null);
+    const prodId = Number(id);
+
+    const url = new URL(req.url);
+    const hardDelete = url.searchParams.get("hard") === "true";
+
+    // Verificar si el producto tiene historial de pedidos vinculados
+    const tienePedidos = await db.pedidoItem.count({ where: { productoId: prodId } });
+
+    if (hardDelete && tienePedidos === 0) {
+      // Eliminación física si no tiene relaciones
+      const p = await db.producto.delete({ where: { id: prodId } });
+      await db.auditoria.create({
+        data: {
+          usuarioId: s.id,
+          usuarioNombre: `${s.nombre} ${s.apellidos}`,
+          accion: "PRODUCTO",
+          justificacion: "Eliminación completa del producto",
+          detalle: { eliminadoFisico: p.nombre },
+        },
+      });
+      return Response.json({ ok: true, tipo: "eliminado" });
+    }
+
+    // Baja lógica (si ya fue vendido o se solicita borrado estándar)
+    const p = await db.producto.update({ where: { id: prodId }, data: { disponible: false } }).catch(() => null);
     if (!p) throw new RespuestaJson(404, { error: "Producto no encontrado." });
     await db.auditoria.create({
-      data: { usuarioId: s.id, usuarioNombre: `${s.nombre} ${s.apellidos}`, accion: "PRODUCTO", justificacion: "Baja del menú", detalle: { dadoDeBaja: p.nombre } },
+      data: {
+        usuarioId: s.id,
+        usuarioNombre: `${s.nombre} ${s.apellidos}`,
+        accion: "PRODUCTO",
+        justificacion: "Baja del menú (disponible = false)",
+        detalle: { dadoDeBaja: p.nombre, tieneHistorialVentas: tienePedidos > 0 },
+      },
     });
-    return Response.json({ ok: true });
+    return Response.json({ ok: true, tipo: "desactivado", tieneHistorial: tienePedidos > 0 });
   } catch (e) {
     return jsonError(e);
   }

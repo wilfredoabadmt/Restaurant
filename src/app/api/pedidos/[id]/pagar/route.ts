@@ -9,7 +9,11 @@ const esquema = z.object({
   montoRecibido: z.number().positive().optional(),
 });
 
-/** POST /api/pedidos/[id]/pagar — cobra el pedido. Genera datos para comandas. */
+/** POST /api/pedidos/[id]/pagar — cobra el pedido. Genera datos para comandas.
+ * REGLA DE NEGOCIO CRÍTICA:
+ * El descuento de stock en la base de datos DEBE ejecutarse estrictamente solo cuando el pedido
+ * pase a estado "Pagado" (Efectivo/QR) desde el módulo de caja dentro de esta transacción.
+ */
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const s = await exigirRol(["CAJERO", "ADMIN"]);
@@ -34,9 +38,30 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         vuelto = Number((montoRecibido - total).toFixed(2));
       }
 
+      // Descuento de stock transaccional al pagar
+      for (const item of p.items) {
+        if (item.productoId) {
+          const prod = await tx.producto.findUnique({ where: { id: item.productoId } });
+          if (prod) {
+            const nuevoStock = Math.max(0, prod.stock - item.cantidad);
+            await tx.producto.update({
+              where: { id: item.productoId },
+              data: { stock: nuevoStock },
+            });
+          }
+        }
+      }
+
       const pedidoActualizado = await tx.pedido.update({
         where: { id: idP },
-        data: { estado: "PAGADO", metodoPago, servicio, montoRecibido: montoRecibido ?? null, vuelto: metodoPago === "EFECTIVO" ? vuelto : null, pagadoEn: new Date() },
+        data: {
+          estado: "PAGADO",
+          metodoPago,
+          servicio,
+          montoRecibido: montoRecibido ?? null,
+          vuelto: metodoPago === "EFECTIVO" ? vuelto : null,
+          pagadoEn: new Date(),
+        },
         include: { items: true },
       });
 
@@ -46,7 +71,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
           usuarioNombre: `${s.nombre} ${s.apellidos}`,
           pedidoId: idP,
           accion: "PAGADO",
-          detalle: { total: pedidoActualizado.total, metodoPago, servicio },
+          detalle: { total: pedidoActualizado.total, metodoPago, servicio, stockDescontado: p.items.map((it) => ({ n: it.nombre, cant: it.cantidad })) },
         },
       });
 

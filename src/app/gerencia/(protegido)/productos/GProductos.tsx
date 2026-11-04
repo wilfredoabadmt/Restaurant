@@ -77,8 +77,30 @@ export default function GProductos() {
   }
 
   async function darBaja(p: Prod) {
-    if (!confirm(`¿Dar de baja «${p.nombre}»? (el historial de ventas se conserva)`)) return;
-    await fetch(`/api/gerencia/productos/${p.id}`, { method: "DELETE" });
+    if (!confirm(`¿Dar de baja «${p.nombre}»? (dejará de mostrarse en el menú de clientes)`)) return;
+    const r = await fetch(`/api/gerencia/productos/${p.id}`, { method: "DELETE" });
+    const d = await r.json();
+    if (!r.ok) return setMsg(d.error || "No se pudo dar de baja");
+    setMsg(d.tipo === "eliminado" ? "Producto eliminado por completo." : "Producto desactivado del menú.");
+    cargar();
+  }
+
+  async function reactivar(p: Prod) {
+    await fetch(`/api/gerencia/productos/${p.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ disponible: true }),
+    });
+    setMsg(`«${p.nombre}» reactivado en el menú.`);
+    cargar();
+  }
+
+  async function eliminarDefinitivo(p: Prod) {
+    if (!confirm(`¿Eliminar definitivamente «${p.nombre}» de la base de datos? Si ya tiene pedidos en el historial, solo se dará de baja.`)) return;
+    const r = await fetch(`/api/gerencia/productos/${p.id}?hard=true`, { method: "DELETE" });
+    const d = await r.json();
+    if (!r.ok) return setMsg(d.error || "No se pudo eliminar.");
+    setMsg(d.tipo === "eliminado" ? "Producto eliminado definitivamente." : "El producto tiene ventas históricas asociadas; fue desactivado.");
     cargar();
   }
 
@@ -110,7 +132,12 @@ export default function GProductos() {
             <div className="flex flex-wrap justify-end gap-1.5">
               <button className="btn btn-suave btn-xs" onClick={() => reponer(p, 6)}>+6 stock</button>
               <button className="btn btn-suave btn-xs" onClick={() => setEdit(p)}>editar</button>
-              <button className="btn btn-suave btn-xs text-[var(--peligro)]" onClick={() => darBaja(p)}>baja</button>
+              {p.disponible ? (
+                <button className="btn btn-suave btn-xs text-[var(--amanecer)]" onClick={() => darBaja(p)}>desactivar</button>
+              ) : (
+                <button className="btn btn-suave btn-xs text-[var(--ok)]" onClick={() => reactivar(p)}>activar</button>
+              )}
+              <button className="btn btn-suave btn-xs text-[var(--peligro)]" onClick={() => eliminarDefinitivo(p)}>eliminar</button>
             </div>
           </li>
         ))}

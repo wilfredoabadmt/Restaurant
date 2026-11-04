@@ -43,6 +43,28 @@ export default function MenuClient() {
   const [numero, setNumero] = useState<number | null>(null);
   const [codigo, setCodigo] = useState("");
   const [error, setError] = useState("");
+  const [mesaNum, setMesaNum] = useState<number | null>(null);
+  const [mesaToken, setMesaToken] = useState<string>("");
+
+  useEffect(() => {
+    // Detectar mesa en URL (?mesa=3) y recuperar/generar token único de mesa
+    const params = new URLSearchParams(window.location.search);
+    const m = params.get("mesa");
+    if (m) {
+      const n = parseInt(m, 10);
+      if (!isNaN(n) && n > 0) {
+        setMesaNum(n);
+        // Token de sesión único por mesa en localStorage
+        let token = localStorage.getItem(`mesa_token_${n}`);
+        if (!token) {
+          token = `m${n}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+          localStorage.setItem(`mesa_token_${n}`, token);
+        }
+        setMesaToken(token);
+        if (!alias) setAlias(`Mesa ${n}`);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/menu").then((r) => r.json()).then((d) => setCats(d.categorias ?? [])).catch(() => setError("No se pudo cargar el menú."));
@@ -93,7 +115,12 @@ export default function MenuClient() {
       const r = await fetch("/api/pedidos", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ items: [...carrito.values()].map(({ productoId, cantidad }) => ({ productoId, cantidad })) }),
+        body: JSON.stringify({
+          items: [...carrito.values()].map(({ productoId, cantidad }) => ({ productoId, cantidad })),
+          mesaNumero: mesaNum ?? undefined,
+          mesaToken: mesaToken || undefined,
+          alias: alias.trim() || (mesaNum ? `Mesa ${mesaNum}` : undefined),
+        }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error ?? "No se pudo enviar.");
@@ -152,7 +179,14 @@ export default function MenuClient() {
                 )}
               </span>
               <div>
-                <p className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: TINTA }}>{empresa.nombre}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="brand text-xl font-bold !leading-none tracking-tight" style={{ color: TINTA }}>{empresa.nombre}</p>
+                  {mesaNum && (
+                    <span className="text-[10px] bg-amber-600 text-white font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+                      Mesa {mesaNum}
+                    </span>
+                  )}
+                </div>
                 <p className="text-[10px] uppercase tracking-wider mt-1 font-semibold" style={{ color: MUTE }}>{empresa.subtitulo}</p>
               </div>
             </div>

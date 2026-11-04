@@ -24,16 +24,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       if (!p) throw new RespuestaJson(404, { error: "Pedido no encontrado." });
       if (p.estado === "ANULADO") throw new RespuestaJson(409, { error: "El pedido ya está anulado." });
 
-      // reintegra stock lo que no se haya reintegrado aún
-      if (p.estado === "REGISTRADO" || p.estado === "LISTO") {
+      // Si el pedido YA ESTABA PAGADO, reintegra el stock que fue descontado en el cobro
+      if (p.estado === "PAGADO") {
         for (const it of p.items) {
           if (it.productoId) await tx.producto.update({ where: { id: it.productoId }, data: { stock: { increment: it.cantidad } } });
         }
       }
-        const pedidoAnulado = await tx.pedido.update({
-          where: { id: idP },
-          data: { estado: "ANULADO", anuladoEn: new Date(), motivoAnulacion: parsed.data.motivo },
-        });
+      // Si era REGISTRADO o LISTO, no se reintegra stock porque nunca se descontó
+
+      const pedidoAnulado = await tx.pedido.update({
+        where: { id: idP },
+        data: { estado: "ANULADO", anuladoEn: new Date(), motivoAnulacion: parsed.data.motivo },
+      });
 
         await tx.auditoria.create({
           data: {

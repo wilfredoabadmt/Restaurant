@@ -5,11 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type Resumen = {
+  rango: "dia" | "semana" | "mes";
+  kpisRango: {
+    totalIngresos: number;
+    cantidadPedidos: number;
+    ticketPromedio: number;
+    efectivoBs: number;
+    qrBs: number;
+    masVendido: { nombre: string; tipo: string; uds: number; bs: number } | null;
+  };
   hoy: { cobradoBs: number; pedidosPagados: number; anulados: number; enCurso: number; enCursoBs: number; efectivoBs: number; qrBs: number };
-  serie: { dia: string; bs: number; pedidos: number }[];
+  serie: { etiqueta: string; dia: string; bs: number; pedidos: number }[];
   topPlatos: { nombre: string; uds: number; bs: number }[];
   topBebidas: { nombre: string; uds: number; bs: number }[];
   topPostres: { nombre: string; uds: number; bs: number }[];
+  rankingGeneral: { nombre: string; tipo: string; uds: number; bs: number }[];
   stockBajo: { id: number; nombre: string; stock: number; stockMin: number; imagen: string }[];
   productos: { id: number; nombre: string; categoria: string; stock: number; stockMin: number; precio: string; imagen: string; disponible: boolean; creadoEn: string }[];
   cajeros: { id: number; nombre: string; apellidos: string; activo: boolean; creadoEn: string; usuario: string }[];
@@ -21,12 +31,12 @@ const Bs = (n: number) => `Bs ${Number(n).toLocaleString("es-BO", { minimumFract
 export default function Dashboard(props: { nombre: string }) {
   const router = useRouter();
   const [d, setD] = useState<Resumen | null>(null);
-  const [cargando, setCargando] = useState(0);
+  const [rango, setRango] = useState<"dia" | "semana" | "mes">("semana");
 
   const cargar = useCallback(async () => {
-    const r = await fetch("/api/gerencia/resumen", { cache: "no-store" });
+    const r = await fetch(`/api/gerencia/resumen?rango=${rango}`, { cache: "no-store" });
     if (r.ok) setD(await r.json());
-  }, []);
+  }, [rango]);
 
   useEffect(() => {
     cargar();
@@ -64,6 +74,69 @@ export default function Dashboard(props: { nombre: string }) {
         </div>
       </div>
 
+      {/* Selector de Rango y Métricas Clave Dinámicas */}
+      <div className="card p-4 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--borde)] pb-3">
+          <div>
+            <h3 className="brand font-bold text-base text-[var(--ink)]">Estadísticas de Ventas Dinámicas</h3>
+            <p className="text-xs text-[var(--muted)]">Selecciona el horizonte temporal para proyectar los KPIs y gráficos.</p>
+          </div>
+          {/* Tabs selector de rango */}
+          <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/10">
+            {(["dia", "semana", "mes"] as const).map((rg) => (
+              <button
+                key={rg}
+                onClick={() => setRango(rg)}
+                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors capitalize ${
+                  rango === rg ? "bg-[var(--brasa)] text-white shadow" : "text-[var(--muted)] hover:text-white"
+                }`}
+              >
+                {rg === "dia" ? "Por Día" : rg === "semana" ? "Por Semana" : "Por Mes"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* KPIs del Rango Seleccionado */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <p className="text-xs text-[var(--muted)]">Total Ingresos ({rango})</p>
+            <p className="brand text-2xl font-bold text-[var(--amanecer)] mt-1 tabular">
+              {Bs(d.kpisRango.totalIngresos)}
+            </p>
+            <p className="text-[11px] text-[var(--muted)] mt-1">
+              💵 Efectivo {Bs(d.kpisRango.efectivoBs)} · 📱 QR {Bs(d.kpisRango.qrBs)}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <p className="text-xs text-[var(--muted)]">Cantidad de Pedidos</p>
+            <p className="brand text-2xl font-bold text-[var(--ink)] mt-1 tabular">
+              {d.kpisRango.cantidadPedidos} pedidos
+            </p>
+            <p className="text-[11px] text-[var(--muted)] mt-1">
+              Ticket Promedio: <strong className="text-[var(--ink)]">{Bs(d.kpisRango.ticketPromedio)}</strong>
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <p className="text-xs text-[var(--muted)]">Producto Más Vendido</p>
+            {d.kpisRango.masVendido ? (
+              <>
+                <p className="brand text-lg font-bold text-amber-300 mt-1 truncate">
+                  🏆 {d.kpisRango.masVendido.nombre}
+                </p>
+                <p className="text-[11px] text-[var(--muted)] mt-1">
+                  {d.kpisRango.masVendido.uds} unidades · {Bs(d.kpisRango.masVendido.bs)}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-[var(--muted)] mt-2">Sin ventas registradas</p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* métricas de hoy */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
@@ -82,7 +155,7 @@ export default function Dashboard(props: { nombre: string }) {
       {/* serie y métodos */}
       <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
         <section className="card p-4">
-          <p className="brand mb-3">Ventas última semana</p>
+          <p className="brand mb-3">Ventas {rango === "dia" ? "por hora (hoy)" : rango === "mes" ? "últimos 30 días" : "última semana"}</p>
           <div className="flex items-end gap-2 h-40">
             {d.serie.map((s) => (
               <div key={s.dia} className="flex-1 grid gap-1 justify-items-center" title={`${Bs(s.bs)} · ${s.pedidos} pedidos`}>
@@ -92,7 +165,7 @@ export default function Dashboard(props: { nombre: string }) {
                     <i style={{ height: "var(--h)" }} />
                   </div>
                 </div>
-                <span className="text-[10px] text-[var(--muted)]">{s.dia}</span>
+                <span className="text-[10px] text-[var(--muted)]">{s.etiqueta || s.dia}</span>
               </div>
             ))}
           </div>
@@ -116,8 +189,8 @@ export default function Dashboard(props: { nombre: string }) {
                     {p.stock} / mín {p.stockMin}
                   </span>
                 </span>
-                <button className="btn btn-suave btn-xs" onClick={() => reponer(p.id, 6)} disabled={cargando > 0}>+6</button>
-                <button className="btn btn-brasa btn-xs" onClick={() => reponer(p.id, 12)} disabled={cargando > 0}>+12</button>
+                <button className="btn btn-suave btn-xs" onClick={() => reponer(p.id, 6)}>+6</button>
+                <button className="btn btn-brasa btn-xs" onClick={() => reponer(p.id, 12)}>+12</button>
               </li>
             ))}
             {d.stockBajo.length === 0 && <li className="text-sm text-[var(--muted)]">Toda la despensa bien — nada por agotarse.</li>}

@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 const TABS = [
   { href: "/gerencia", t: "Resumen" },
   { href: "/gerencia/productos", t: "Productos" },
+  { href: "/gerencia/stock", t: "Stock" },
+  { href: "/gerencia/mesas", t: "Mesas QR" },
   { href: "/gerencia/categorias", t: "Categorías" },
   { href: "/gerencia/cajeros", t: "Cajeros" },
   { href: "/gerencia/pedidos", t: "Pedidos" },

@@ -88,24 +88,17 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
 
       let nuevoTotal = Number(p.total);
       if (items) {
-        // reintegra stock original y valida/reserva el nuevo
-        for (const it of p.items) {
-          if (it.productoId) await tx.producto.update({ where: { id: it.productoId }, data: { stock: { increment: it.cantidad } } });
-        }
         const productos = await tx.producto.findMany({ where: { id: { in: items.map((i) => i.productoId) } }, include: { categoria: true } });
         const mapa = new Map(productos.map((pr) => [pr.id, pr]));
         const nuevos = items.map((i) => {
           const prod = mapa.get(i.productoId);
           if (!prod || !prod.disponible) throw new RespuestaJson(400, { error: "Producto no disponible." });
-          if (prod.stock < i.cantidad) throw new RespuestaJson(409, { error: `Stock insuficiente de «${prod.nombre}» (${prod.stock} uds).` });
           return { productoId: prod.id, nombre: prod.nombre, tipo: prod.categoria.tipo, precio: prod.precio, cantidad: i.cantidad };
         });
         nuevoTotal = nuevos.reduce((t, i) => t + Number(i.precio) * i.cantidad, 0);
         await tx.pedidoItem.deleteMany({ where: { pedidoId: idP } });
         await tx.pedidoItem.createMany({ data: nuevos.map((i) => ({ ...i, pedidoId: idP })) });
-        for (const n of nuevos) {
-          await tx.producto.update({ where: { id: n.productoId }, data: { stock: { decrement: n.cantidad } } });
-        }
+        // No se altera stock aquí: el stock se descuenta únicamente al pagar en caja
       }
 
         const pedidoModificado = await tx.pedido.update({
@@ -146,11 +139,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
       const p = await tx.pedido.findUnique({ where: { id: idP }, include: { items: true } });
       if (!p) throw new RespuestaJson(404, { error: "Pedido no encontrado." });
       if (p.estado === "PAGADO") throw new RespuestaJson(409, { error: "Un pedido pagado se anula desde gerencia, no se elimina." });
-      if (p.estado !== "ANULADO") {
-        for (const it of p.items) {
-          if (it.productoId) await tx.producto.update({ where: { id: it.productoId }, data: { stock: { increment: it.cantidad } } });
-        }
-      }
+      // En estado REGISTRADO/LISTO no se descuenta stock, por ende no se devuelve nada al eliminar
       await tx.auditoria.create({
         data: {
           usuarioId: s.id,
